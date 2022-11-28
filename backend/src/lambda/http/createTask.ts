@@ -2,16 +2,16 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import 'source-map-support/register'
 import * as middy from 'middy'
 import { cors } from 'middy/middlewares'
-import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
-import { createTodoItem } from '../../helpers/todos'
+import { CreateTaskRequest } from '../../requests/CreateTaskRequest'
+import { createTaskItem } from '../../helpers/tasks'
 import { createLogger } from '../../utils/logger'
 
-const logger = createLogger('todos');
+const logger = createLogger('tasks');
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    const newTodo: CreateTodoRequest = JSON.parse(event.body)
+    const newTask: CreateTaskRequest = JSON.parse(event.body)
     // TODO: Implement creating a new TODO item
-    if(!newTodo.name)
+    if(!newTask.name)
     {
       return {
         statusCode: 400,
@@ -21,8 +21,8 @@ export const handler = middy(
       };
     }
 
-    const todo = await createTodoItem(event, newTodo);
-    logger.info("Todo item has been created");
+    const task = await createTaskItem(event, newTask);
+    logger.info("Task item has been created");
     return {
       statusCode: 201,
       headers: {
@@ -31,7 +31,7 @@ export const handler = middy(
       },
   
       body: JSON.stringify({
-        item: todo
+        item: task
       })
     };
   })

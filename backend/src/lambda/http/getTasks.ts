@@ -3,7 +3,7 @@ import 'source-map-support/register'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import * as middy from 'middy'
 import { cors } from 'middy/middlewares'
-import { getTodoItems } from '../../helpers/todos'
+import { getTaskItems } from '../../helpers/tasks'
 
 // TODO: Get all TODO items for a current user
 export const handler = middy(
@@ -16,7 +16,7 @@ export const handler = middy(
         'Access-Control-Allow-Credentials': true
       },
       body: JSON.stringify({
-        items: await getTodoItems(event)
+        items: await getTaskItems(event)
       })
     };
 })

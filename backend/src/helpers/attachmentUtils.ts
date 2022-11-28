@@ -4,18 +4,18 @@ import * as AWSXRay from 'aws-xray-sdk'
 const XAWS = AWSXRay.captureAWS(AWS)
 
 // TODO: Implement the fileStogare logic
-export class TodosStorage {
+export class TasksStorage {
     constructor(
-        private readonly todosStorage = process.env.ATTACHMENT_S3_BUCKET,
+        private readonly tasksStorage = process.env.ATTACHMENT_S3_BUCKET,
         private readonly s3 = new XAWS.S3({ signatureVersion: 'v4'})
     ) {}
    async getBucketName() {
-        return this.todosStorage;
+        return this.tasksStorage;
     }
-   async getPresignedUploadURL(bucketName, todoId, urlExpiration) {
+   async getPresignedUploadURL(bucketName, taskId, urlExpiration) {
         return this.s3.getSignedUrl('putObject', {
             Bucket: bucketName,
-            Key: todoId,
+            Key: taskId,
             Expires: parseInt(urlExpiration)
         });
     }

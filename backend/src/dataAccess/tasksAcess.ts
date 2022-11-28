@@ -2,27 +2,27 @@ import * as AWS from 'aws-sdk'
 // import * as AWSXRay from 'aws-xray-sdk'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { createLogger } from '../utils/logger'
-import { TodoItem } from '../models/TodoItem'
-import { TodoUpdate } from '../models/TodoUpdate';
+import { TaskItem } from '../models/TaskItem'
+import { TaskUpdate } from '../models/TaskUpdate';
 
 const AWSXRay = require('aws-xray-sdk');
 const XAWS = AWSXRay.captureAWS(AWS)
 
-const logger = createLogger('TodosAccess')
+const logger = createLogger('TasksAccess')
 
 // TODO: Implement the dataLayer logic
-export  class TodosAccess {
+export  class TasksAccess {
     constructor(
         private readonly docClient: DocumentClient = new XAWS.DynamoDB.DocumentClient(),
-        private readonly todosTable = process.env.TODOS_TABLE,
-        private readonly indexName = process.env.TODOS_CREATED_AT_INDEX,
-        private readonly todosStorage = process.env.ATTACHMENT_S3_BUCKET
+        private readonly tasksTable = process.env.TASKS_TABLE,
+        private readonly indexName = process.env.TASKS_CREATED_AT_INDEX,
+        private readonly tasksStorage = process.env.ATTACHMENT_S3_BUCKET
     ) {}
     
-    // get all todo items of current user
-    async getAllTodoItems(userId) {        
+    // get all task items of current user
+    async getAllTaskItems(userId) {        
         const result = await this.docClient.query({
-            TableName: this.todosTable,
+            TableName: this.tasksTable,
             IndexName: this.indexName,
             KeyConditionExpression: 'userId = :userId',
             ExpressionAttributeValues: {
@@ -33,41 +33,41 @@ export  class TodosAccess {
         return result.Items;
     }
 
-    // get todo items
-    async getTodoItem(todoId, userId) {
+    // get task items
+    async getTaskItem(taskId, userId) {
         const result = await this.docClient.get({
-            TableName: this.todosTable,
+            TableName: this.tasksTable,
             Key: {
-                todoId,
+                taskId,
                 userId
             }
         }).promise();  
         return result.Item;
     }
 
-    // add todo item
-    async addTodoItem(todoItem:TodoItem) {
+    // add task item
+    async addTaskItem(taskItem:TaskItem) {
         await this.docClient.put({
-            TableName: this.todosTable,
-            Item: todoItem
+            TableName: this.tasksTable,
+            Item: taskItem
         }).promise();
     }
 
-    // update todo item
-    async updateTodoItem(todoId, userId, updatedTodo:TodoUpdate) {
-        console.log("update todoId:" +todoId+ " " +userId)
-        logger.info("update todoId:" +todoId+ " " +userId)
+    // update task item
+    async updateTaskItem(taskId, userId, updatedTask:TaskUpdate) {
+        console.log("update taskId:" +taskId+ " " +userId)
+        logger.info("update taskId:" +taskId+ " " +userId)
           await this.docClient.update({
-              TableName: this.todosTable,
+              TableName: this.tasksTable,
               Key: {
-                todoId,
+                taskId,
                   userId
               },
               UpdateExpression: 'set #name = :n, #dueDate = :due, #done = :d',
               ExpressionAttributeValues: {
-                  ':n': updatedTodo.name,
-                  ':due': updatedTodo.dueDate,
-                  ':d': updatedTodo.done
+                  ':n': updatedTask.name,
+                  ':due': updatedTask.dueDate,
+                  ':d': updatedTask.done
               },
               ExpressionAttributeNames: {
                   '#name': 'name',
@@ -77,29 +77,29 @@ export  class TodosAccess {
           }).promise();
       }
 
-      // delete todo item
-      async deleteTodoItem(todoId, userId) {
+      // delete task item
+      async deleteTaskItem(taskId, userId) {
         await this.docClient.delete({
-            TableName: this.todosTable,
+            TableName: this.tasksTable,
             Key: {
-                todoId,
+                taskId,
                 userId
             }
         }).promise();
     }
 
     // update attachment Url
-    async updateTodoAttachmentUrl(todoId: string, attachmentUrl: string){
-        console.log('updateTodoAttachmentUrl' + todoId +" "+ attachmentUrl)
-        logger.info('updateTodoAttachmentUrl' + todoId +" "+ attachmentUrl)
+    async updateTaskAttachmentUrl(taskId: string, attachmentUrl: string){
+        console.log('updateTaskAttachmentUrl' + taskId +" "+ attachmentUrl)
+        logger.info('updateTaskAttachmentUrl' + taskId +" "+ attachmentUrl)
         await this.docClient.update({
-            TableName: this.todosTable,
+            TableName: this.tasksTable,
             Key: {
-                "jobId": todoId
+                "jobId": taskId
             },
             UpdateExpression: "set attachmentUrl = :attachmentUrl",
             ExpressionAttributeValues: {
-                ":attachmentUrl": `https://${this.todosStorage}.s3.amazonaws.com/${attachmentUrl}`
+                ":attachmentUrl": `https://${this.tasksStorage}.s3.amazonaws.com/${attachmentUrl}`
             }
         }).promise();
     }    
